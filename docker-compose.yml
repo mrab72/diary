@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  web:
+    image: smartnotes
+    container_name: notes
+    build:
+      context: .
+      dockerfile: Dockerfile  # Path to your Dockerfile
+    command: gunicorn smartnotes.wsgi:application -c gunicorn.py
+    expose:
+      - "8000"
+    depends_on:
+      - db
+    networks:
+      - my_network
+
+  db:
+    image: postgres:latest
+    container_name: notes_storage
+    environment:
+      POSTGRES_DB: notes
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin 
+    networks:
+      - my_network
+
+  nginx:
+    image: nginx:latest
+    container_name: web_server
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - web
+    networks:
+      - my_network
+
+networks:
+  my_network:
+
